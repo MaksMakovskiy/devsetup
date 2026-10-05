@@ -57,6 +57,9 @@ fs::path findExe(const string& name) {
 #ifdef _WIN32
  const char separator = ';';
  const std::vector<string> extensions = {".exe", ".cmd", ".bat", ""};
+ // App Execution Aliases are reparse points, and WindowsApps may be absent from PATH.
+ if (name == "winget" && !env("LOCALAPPDATA").empty())
+  paths += ";" + (fs::u8path(env("LOCALAPPDATA")) / "Microsoft/WindowsApps").u8string();
 #else
  const char separator = ':';
  const std::vector<string> extensions = {""};
@@ -67,9 +70,12 @@ fs::path findExe(const string& name) {
   if (part.front() == '"' && part.back() == '"') part = part.substr(1, part.size()-2);
   for (const auto& ext : extensions) {
    auto p = fs::u8path(part) / (name + ext);
+#ifdef _WIN32
+   DWORD attributes = GetFileAttributesW(p.c_str());
+   if (attributes == INVALID_FILE_ATTRIBUTES || (attributes & FILE_ATTRIBUTE_DIRECTORY)) continue;
+#else
    std::error_code ec;
    if (!fs::is_regular_file(p, ec)) continue;
-#ifndef _WIN32
    if (access(p.c_str(), X_OK) != 0) continue;
 #endif
    return fs::absolute(p);
@@ -146,6 +152,8 @@ fs::path codePath() {
 string ask(const string& prompt) {
  std::cout << prompt << std::flush; string line;
  if (!std::getline(std::cin, line)) throw std::runtime_error("End of input.");
+ // PowerShell/.NET can prefix redirected UTF-8 input with a BOM.
+ if (line.compare(0, 3, "\xEF\xBB\xBF") == 0) line.erase(0, 3);
  return line;
 }
 bool yes(const string& prompt) { auto s = ask(prompt + " [y/N]: "); return s=="y" || s=="Y" || s=="yes" || s=="YES"; }
@@ -166,9 +174,20 @@ int command(const string& cmd) {
 struct Option { string label, cmd; };
 void chooseInstall(bool editor) {
  std::vector<Option> options;
+ if (!editor) {
+  auto installed = compilers();
+  if (!installed.empty()) {
+   std::cout << "[OK] A compiler is already installed: " << installed.front().name
+             << "\nUse option 4 to configure your project; reinstalling is not required.\n";
+  }
+ }
  if (os()=="Windows" && !findExe("winget").empty()) {
-  if (editor) options.push_back({"Visual Studio Code (winget)", "winget install --exact --id Microsoft.VisualStudioCode"});
-  else options.push_back({"MSVC + Windows SDK (Build Tools 2022)", "winget install --exact --id Microsoft.VisualStudio.2022.BuildTools --override \"--passive --wait --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended\""});
+  string winget = findExe("winget").u8string();
+  if (winget.find_first_of("\"%!\r\n") != string::npos)
+   throw std::runtime_error("Unsupported characters in the winget path. Run winget manually.");
+  string prefix = "\"\"" + winget + "\" install --exact --id ";
+  if (editor) options.push_back({"Visual Studio Code (winget)", prefix + "Microsoft.VisualStudioCode\""});
+  else options.push_back({"MSVC + Windows SDK (Build Tools 2022)", prefix + "Microsoft.VisualStudio.2022.BuildTools --override \"--passive --wait --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended\"\""});
  } else if (os()=="macOS") {
   if (!editor) options.push_back({"Apple Clang / Xcode Command Line Tools", "xcode-select --install"});
   if (editor && !findExe("brew").empty()) options.push_back({"Visual Studio Code (Homebrew)", "brew install --cask visual-studio-code"});
@@ -194,9 +213,13 @@ void chooseInstall(bool editor) {
   }
  }
  if (options.empty()) {
-  std::cout << "Automatic installation is unavailable in this environment.\n";
+  if (os()=="Windows") {
+   std::cout << "[--] winget was not found. Automatic installation requires Windows App Installer.\n"
+                "Install/update App Installer: https://apps.microsoft.com/detail/9nblggh4nns1\n"
+                "Then restart DevSetup. Existing compilers can still be used with option 4.\n";
+  } else std::cout << "Automatic installation is unavailable in this environment.\n";
   if (editor) std::cout << "Download VS Code: https://code.visualstudio.com/download\n";
-  else if (os()=="Windows") std::cout << "Install App Installer (winget) or Build Tools: https://visualstudio.microsoft.com/downloads/\n";
+  else if (os()=="Windows") std::cout << "Or install Build Tools manually: https://visualstudio.microsoft.com/downloads/\n";
   return;
  }
  for (size_t i=0; i<options.size(); ++i) std::cout << i+1 << ") " << options[i].label << '\n';

@@ -166,3 +166,11 @@ Compiler/editor installation commands and macOS execution have not been exercise
 - [Visual Studio installation parameters](https://learn.microsoft.com/en-us/visualstudio/install/use-command-line-parameters-to-install-visual-studio?view=vs-2022)
 - [Apple Command Line Tools](https://developer.apple.com/documentation/xcode/installing-the-command-line-tools/)
 - [VS Code in Homebrew](https://formulae.brew.sh/cask/visual-studio-code)
+
+## Windows: compiler found but installation unavailable
+
+If MSVC is listed as installed, use menu option 4 to configure your project; you do not need to reinstall it.
+Automatic installation uses winget. DevSetup recognizes Windows App Execution Aliases and checks
+`%LOCALAPPDATA%/Microsoft/WindowsApps` even when that directory is missing from PATH.
+If winget is genuinely missing, install or update [App Installer](https://apps.microsoft.com/detail/9nblggh4nns1),
+then restart DevSetup. You can still configure an existing compiler without winget.

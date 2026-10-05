@@ -1,3 +1,4 @@
+param([string]$OutputDirectory = (Join-Path $PSScriptRoot 'dist'))
 $ErrorActionPreference = 'Stop'
 $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio/Installer/vswhere.exe'
 if (!(Test-Path -LiteralPath $vswhere)) { throw 'Install MSVC Build Tools with the Desktop development with C++ workload first.' }
@@ -9,7 +10,7 @@ if ($LASTEXITCODE -ne 0) { throw 'Cannot initialize MSVC.' }
 foreach ($line in $lines) {
     if ($line -match '^([^=]+)=(.*)$') { [Environment]::SetEnvironmentVariable($matches[1], $matches[2], 'Process') }
 }
-$out = Join-Path $PSScriptRoot 'dist'
+$out = [IO.Path]::GetFullPath($OutputDirectory)
 New-Item -ItemType Directory -Force -Path $out | Out-Null
 Push-Location $out
 try {
