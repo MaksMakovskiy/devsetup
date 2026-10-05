@@ -15,7 +15,7 @@ run('--check')
 run('--help')
 with tempfile.TemporaryDirectory(prefix='devsetup test ') as directory:
     root = pathlib.Path(directory)
-    project = root / 'project with spaces'
+    project = root / "project with spaces & apostrophe ' Unicode \u0442\u0435\u0441\u0442"
     run('--configure', str(project))
     source = project / 'hello.cpp'
     source.write_text('#include <iostream>\nint main() { std::cout << "smoke-ok"; }\n')
@@ -35,6 +35,10 @@ with tempfile.TemporaryDirectory(prefix='devsetup test ') as directory:
         return value
     subprocess.run([task['command'], *map(expand, task['args'])], cwd=project, check=True)
     assert subprocess.check_output([str(project / 'hello')], text=True) == 'smoke-ok'
+    source.write_text('#error expected compile failure\n')
+    failure = subprocess.run([task['command'], *map(expand, task['args'])], cwd=project,
+                             capture_output=True)
+    assert failure.returncode != 0
     before = tasks_path.read_bytes()
     run('--configure', str(project))
     assert tasks_path.read_bytes() == before

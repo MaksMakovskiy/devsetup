@@ -316,7 +316,7 @@ int app(const std::vector<string>& args) {
    auto list=compilers(); if (list.empty()) throw std::runtime_error("No compiler found.");
    configure(fs::u8path(args[2]), list.front(), false); return 0;
   }
-  if (args[1]=="--help") { std::cout << "devsetup [--check | --configure DIRECTORY | --help]\nNo arguments: interactive menu. --configure: use the first detected compiler without overwriting conflicting files.\n"; return 0; }
+  if (args[1]=="--help" && args.size()==2) { std::cout << "devsetup [--check | --configure DIRECTORY | --help]\nNo arguments: interactive menu. --configure: use the first detected compiler without overwriting conflicting files.\n"; return 0; }
   throw std::runtime_error("Unknown arguments. Use --help.");
  }
  std::cout << "\n  DEVSETUP / C++\n  Console environment setup\n"; report();

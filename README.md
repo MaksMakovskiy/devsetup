@@ -174,3 +174,7 @@ Automatic installation uses winget. DevSetup recognizes Windows App Execution Al
 `%LOCALAPPDATA%/Microsoft/WindowsApps` even when that directory is missing from PATH.
 If winget is genuinely missing, install or update [App Installer](https://apps.microsoft.com/detail/9nblggh4nns1),
 then restart DevSetup. You can still configure an existing compiler without winget.
+
+## Functional verification
+
+See the [verification report](devsetup/TESTING.md) for tested features, reproduction commands, and remaining platform/installation limits.

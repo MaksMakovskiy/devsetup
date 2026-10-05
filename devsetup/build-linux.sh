@@ -13,7 +13,8 @@ mkdir -p "$package/DEBIAN" "$package/usr/bin"
 g++ -std=c++17 -O2 -Wall -Wextra -Wpedantic -static -s src/main.cpp -o dist/devsetup-linux-x64
 chmod 755 dist/devsetup-linux-x64
 python3 test-linux.py dist/devsetup-linux-x64
-tar -czf dist/devsetup-linux-x64.tar.gz -C dist devsetup-linux-x64 -C .. README.md
+python3 test-functional-linux.py dist/devsetup-linux-x64
+tar -czf dist/devsetup-linux-x64.tar.gz -C dist devsetup-linux-x64 -C .. README.md TESTING.md
 cp dist/devsetup-linux-x64 "$package/usr/bin/devsetup"
 chmod 755 "$package" "$package/DEBIAN" "$package/usr" "$package/usr/bin" "$package/usr/bin/devsetup"
 cat > "$package/DEBIAN/control" <<EOF

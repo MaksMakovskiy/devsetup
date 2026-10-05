@@ -1,7 +1,7 @@
 param([string]$Executable = (Join-Path $PSScriptRoot 'dist/devsetup-windows-x64.exe'))
 $ErrorActionPreference = 'Stop'
 $exe = [IO.Path]::GetFullPath($Executable)
-$project = Join-Path $PSScriptRoot ('test-output/project with spaces ' + [guid]::NewGuid().ToString('N'))
+$project = Join-Path $PSScriptRoot ('test-output/project & spaces ' + [char]0x0442 + [char]0x0435 + [char]0x0441 + [char]0x0442 + ' ' + [guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $project -Force | Out-Null
 & $exe --check
 if ($LASTEXITCODE -ne 0) { throw 'Detection failed' }
@@ -23,6 +23,9 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Generated VS Code task failed' }
     $result = & $output
     if ($LASTEXITCODE -ne 0 -or $result -ne 'smoke-ok') { throw 'Compiled program failed' }
+    [IO.File]::WriteAllText($source, '#error expected compile failure')
+    & $task.command @taskArgs 2>&1 | Out-Null
+    if ($LASTEXITCODE -eq 0) { throw 'Compiler error was reported as success' }
 } finally { Pop-Location }
 # Idempotence and refusal to overwrite existing custom settings.
 & $exe --configure $project
