@@ -1,0 +1,9 @@
+/build/
+/dist/*
+!/dist/devsetup-windows-x64.exe
+!/dist/devsetup-windows-x64.zip
+!/dist/devsetup-linux-x64.tar.gz
+!/dist/devsetup_0.1.0_amd64.deb
+!/dist/SHA256SUMS.txt
+/test-output/
+/test project */
