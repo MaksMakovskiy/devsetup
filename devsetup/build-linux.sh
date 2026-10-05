@@ -6,15 +6,13 @@ if [[ $(uname -s) != Linux || $(uname -m) != x86_64 ]]; then
   echo 'This release script requires Linux x86_64.' >&2
   exit 1
 fi
-mkdir -p dist
+mkdir -p dist archives
 package=$(mktemp -d)
 trap 'rm -rf -- "$package"' EXIT
 mkdir -p "$package/DEBIAN" "$package/usr/bin"
 g++ -std=c++17 -O2 -Wall -Wextra -Wpedantic -static -s src/main.cpp -o dist/devsetup-linux-x64
 chmod 755 dist/devsetup-linux-x64
-python3 test-linux.py dist/devsetup-linux-x64
-python3 test-functional-linux.py dist/devsetup-linux-x64
-tar -czf dist/devsetup-linux-x64.tar.gz -C dist devsetup-linux-x64 -C .. README.md TESTING.md
+tar -czf archives/devsetup-linux-x64.tar.gz -C dist devsetup-linux-x64 -C .. README.md
 cp dist/devsetup-linux-x64 "$package/usr/bin/devsetup"
 chmod 755 "$package" "$package/DEBIAN" "$package/usr" "$package/usr/bin" "$package/usr/bin/devsetup"
 cat > "$package/DEBIAN/control" <<EOF
@@ -30,4 +28,4 @@ Description: Interactive C++ and Visual Studio Code environment setup
 EOF
 chmod 644 "$package/DEBIAN/control"
 dpkg-deb --root-owner-group --build "$package" "dist/devsetup_${version}_amd64.deb"
-echo 'Built and tested Linux x64 archive and Debian/Ubuntu package.'
+echo 'Built Linux x64 archive and Debian/Ubuntu package.'

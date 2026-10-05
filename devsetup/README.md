@@ -11,11 +11,10 @@ and click **Download raw file** if the browser shows a file preview.
 
 | Your system | Download | How to run |
 | --- | --- | --- |
-| Windows x64 | [Windows ZIP](dist/devsetup-windows-x64.zip) or [EXE](dist/devsetup-windows-x64.exe) | Extract the ZIP and double-click the EXE |
+| Windows x64 | [Windows ZIP](archives/devsetup-windows-x64.zip) or [EXE](dist/devsetup-windows-x64.exe) | Extract the ZIP and double-click the EXE |
 | Ubuntu / Debian / Linux Mint, amd64 | [DEB package](dist/devsetup_0.1.0_amd64.deb) | Install with the command below, then run `devsetup` |
-| Other Linux distributions, x86_64 | [Linux tar.gz](dist/devsetup-linux-x64.tar.gz) | Extract and run; no package installation needed |
+| Other Linux distributions, x86_64 | [Linux tar.gz](archives/devsetup-linux-x64.tar.gz) | Extract and run; no package installation needed |
 
-[SHA-256 checksums](dist/SHA256SUMS.txt) are provided for the release files.
 Ubuntu is a Linux distribution: both Linux downloads contain the same executable.
 The `.deb` installs it to `/usr/bin/devsetup`; the archive can be extracted anywhere.
 
@@ -124,33 +123,29 @@ cmake --build build --config Release
 Without CMake: `c++ -std=c++17 -O2 src/main.cpp -o devsetup`.
 
 To reproduce the static Linux archive and `.deb` release on Linux x86_64, install
-GCC with static standard libraries, Python 3, tar, and dpkg-deb, then run:
+GCC with static standard libraries, tar, and dpkg-deb, then run:
 
 ```sh
 bash build-linux.sh
 ```
 
-On Ubuntu these build tools are available through `sudo apt install build-essential python3 dpkg-dev`.
-The script runs `test-linux.py` before packaging; it does not install the generated package.
+On Ubuntu these build tools are available through `sudo apt install build-essential dpkg-dev`.
+The script creates the archive in `archives/` and the DEB package in `dist/`; it does not install the generated package.
 
 Build separately for each operating system and architecture. Linux binaries also depend on
 the target libc/libstdc++ versions. A Windows `.exe` is not a universal binary for Linux, macOS, or phones.
 
-## Command-line options and verification
+## Command-line options
 
 ```powershell
 ./dist/devsetup-windows-x64.exe --check
 ./dist/devsetup-windows-x64.exe --configure "C:/Projects/Hello"
 ./dist/devsetup-windows-x64.exe --help
-powershell -NoProfile -ExecutionPolicy Bypass -File ./test-windows.ps1
 ```
 
 `--configure DIRECTORY` uses the first detected compiler, installs no packages, and refuses
 to overwrite conflicting files. Without arguments, DevSetup opens its interactive menu.
 
-The Windows smoke test checks detection, JSON, actual compilation and execution through
-the generated task, repeat configuration, conflict protection, and input handling.
-Test artifacts remain in `test-output`.
 
 Windows and Linux were verified locally with actual compilation and execution through
 their generated VS Code tasks. Linux verification used Ubuntu 26.04.1 LTS in WSL2.
@@ -173,6 +168,7 @@ Automatic installation uses winget. DevSetup recognizes Windows App Execution Al
 If winget is genuinely missing, install or update [App Installer](https://apps.microsoft.com/detail/9nblggh4nns1),
 then restart DevSetup. You can still configure an existing compiler without winget.
 
-## Functional verification
 
-See the [verification report](TESTING.md) for tested features, reproduction commands, and remaining platform/installation limits.
+## Source download
+
+[Download the source ZIP](archives/devsetup-source.zip). ZIP and tar.gz archives are kept in `archives/`; standalone executables and the DEB package are in `dist/`.
